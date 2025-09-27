@@ -1,3 +1,4 @@
+---
 description: Generate a comprehensive markdown summary of our conversation for seamless handoff to another AI agent
 model: opus
 Conversation Handoff Summary
@@ -17,6 +18,7 @@ Output Format
 The command generates a markdown file with the following structure:
 markdown# Project Handoff Summary
 Generated: [timestamp]
+---
 
 ## 📋 Overview
 
