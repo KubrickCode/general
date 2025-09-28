@@ -1,13 +1,15 @@
 ---
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*)
-argument-hint: [message]
-description: Generate clear and descriptive commit messages without conventional prefixes
+argument-hint: [ko|en] [message]
+description: Generate clear and descriptive commit messages in Korean or English without conventional prefixes
 model: sonnet
 ---
 
 # Smart Git Commit Message Generator
 
-Generate clear commit message: $ARGUMENTS
+Generate clear commit message in specified language: $ARGUMENTS
+
+**Language:** Use `ko` for Korean, `en` for English (default)
 
 ## Current Repository State
 
