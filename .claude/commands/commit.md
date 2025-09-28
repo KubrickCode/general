@@ -2,7 +2,6 @@
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*)
 argument-hint: [ko|en] [message]
 description: Generate clear and descriptive commit messages in Korean or English without conventional prefixes
-model: sonnet
 ---
 
 # Smart Git Commit Message Generator

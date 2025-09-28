@@ -1,6 +1,5 @@
 ---
 description: Generate a comprehensive markdown summary of our conversation for seamless handoff to another AI agent
-model: opus
 Conversation Handoff Summary
 Generate comprehensive summary for AI agent handoff: $ARGUMENTS
 What This Command Does
