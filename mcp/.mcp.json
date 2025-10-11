@@ -10,20 +10,20 @@
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["@playwright/mcp@latest", "--no-sandbox"]
     },
     "notion": {
       "command": "npx",
       "args": ["-y", "@suekou/mcp-notion-server"],
       "env": {
-        "NOTION_API_TOKEN": "${env:NOTION_PAT}"
+        "NOTION_API_TOKEN": "${NOTION_PAT}"
       }
     },
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PAT}"
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
       }
     }
   }
