@@ -4,7 +4,11 @@
   "service": "workspace",
   "workspaceFolder": "/workspaces/general",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22.11.0"
+    }
+    
   },
   "remoteUser": "root"
 }
