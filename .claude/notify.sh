@@ -2,7 +2,7 @@
 
 WEBHOOK_URL="https://discord.com/api/webhooks/1426399609382506588/4RZ1VJgLs4uczKgRw1mIeK_BMm8lXLIFul3mkozAz1maIhTW2-THqJXSI6EJnU_XUpbi"
 START_TIME_FILE="/tmp/claude_start_time"
-MIN_DURATION=30
+MIN_DURATION=10
 
 cat > /dev/null
 
