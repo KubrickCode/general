@@ -101,3 +101,17 @@ release version="patch":
 
 release-branch-push:
     git push -f origin main:release
+
+test-go:
+  go list -f '{{{{.Dir}}' -m | xargs -I {} go test {}/...
+
+test-ts mode="":
+  #!/usr/bin/env bash
+  cd "{{ ts_dir }}"
+  if [ "{{ mode }}" = "watch" ]; then
+    yarn test:watch
+  elif [ "{{ mode }}" = "coverage" ]; then
+    yarn test --coverage
+  else
+    yarn test
+  fi

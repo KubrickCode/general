@@ -34,4 +34,4 @@ jobs:
         uses: extractions/setup-just@v3
 
       - name: Run Go tests
-        run: just go-test
+        run: just test-go
