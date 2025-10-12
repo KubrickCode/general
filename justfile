@@ -3,7 +3,7 @@ set dotenv-load
 root_dir := justfile_directory()
 
 baedal source target_dir=".":
-  baedal kubrickcode/loa-work/{{ source }} {{ target_dir }}
+  baedal kubrickcode/general/{{ source }} {{ target_dir }}
 
 install-baedal:
   #!/usr/bin/env bash
