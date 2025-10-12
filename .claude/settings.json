@@ -5,18 +5,6 @@
     "command": "bash /workspaces/general/.claude/statusline.sh"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            // TODO: Modify the path to fit your project structure
-            "command": "bash /workspaces/general/.claude/notify.sh"
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "",
