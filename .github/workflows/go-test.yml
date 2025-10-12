@@ -1,0 +1,37 @@
+name: Go Tests
+
+on:
+# TODO: Uncomment when using
+  # pull_request:
+  #   types:
+  #     - synchronize
+  #     - opened
+  #     - reopened
+  #     - unlocked
+  #   paths:
+  #     - "src/go/**"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "src/go/**"
+  # workflow_dispatch:
+
+jobs:
+  go-tests:
+    name: Run Go tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@master
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.23
+
+      - name: Set up Just CLI
+        uses: extractions/setup-just@v3
+
+      - name: Run Go tests
+        run: just go-test
