@@ -1,7 +1,9 @@
 {
+  // TODO: Modify to fit your project structure
   "name": "general",
   "dockerComposeFile": "docker-compose.yml",
   "service": "workspace",
+  // TODO: Modify to fit your project structure
   "workspaceFolder": "/workspaces/general",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
