@@ -5,12 +5,10 @@
   "workspaceFolder": "/workspaces/general",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/guiyomh/features/just:0": {
-      "version": "1.24.0"
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22.18.0"
-    }
+    "./local-features/doppler": {},
+    "./local-features/go": {},
+    "./local-features/just": {},
+    "./local-features/node": {}
   },
   "postCreateCommand": "npm install -g @anthropic-ai/claude-code && npm install -g prettier",
   "customizations": {
