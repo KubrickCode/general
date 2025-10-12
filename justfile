@@ -2,12 +2,6 @@ set dotenv-load
 
 root_dir := justfile_directory()
 
-install-baedal:
-  #!/usr/bin/env bash
-  if ! command -v baedal &> /dev/null; then
-    npm install -g baedal
-  fi
-
 generate-env:
   #!/usr/bin/env bash
   set -euox pipefail
