@@ -88,3 +88,16 @@ pgadmin:
       -p 8080:80 \
       dpage/pgadmin4
   fi
+
+release version="patch":
+    @echo "🚀 Creating {{version}} release..."
+    npm version {{version}}
+    git push origin main --tags
+    git checkout release
+    git merge main
+    git push origin release
+    git checkout main
+    @echo "✅ Release complete! Check GitHub Actions."
+
+release-branch-push:
+    git push -f origin main:release
