@@ -2,13 +2,13 @@ set dotenv-load
 
 root_dir := justfile_directory()
 
-degit source_dir target_dir:
-  degit https://github.com/KubrickCode/general/{{ source_dir }} {{ target_dir }}
+baedal source target_dir=".":
+  baedal kubrickcode/loa-work/{{ source }} {{ target_dir }}
 
-install-degit:
+install-baedal:
   #!/usr/bin/env bash
-  if ! command -v degit &> /dev/null; then
-    npm install -g degit
+  if ! command -v baedal &> /dev/null; then
+    npm install -g baedal
   fi
 
 generate-env:
@@ -37,6 +37,38 @@ generate-env:
   doppler secrets download --project loa-work --config dev_vite --format env --no-file --token "${DOPPLER_TOKEN_VITE}" | sed 's/"//g' > "{{ frontend_dir }}/.env"
 
   echo "Environment files generated successfully."
+
+lint target="all":
+  #!/usr/bin/env bash
+  set -euox pipefail
+  case "{{ target }}" in
+    all)
+      just lint backend
+      just lint frontend
+      just lint go
+      just lint config
+      ;;
+    backend)
+      prettier --write "{{ backend_dir }}/src/**/*.ts"
+      cd "{{ backend_dir }}"
+      yarn lint
+      ;;
+    frontend)
+      prettier --write "{{ frontend_dir }}/src/**/*.{ts,tsx}"
+      cd "{{ frontend_dir }}"
+      yarn eslint --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
+      ;;
+    go)
+      gofmt -w "{{ root_dir }}/src/go"
+      ;;
+    config)
+      prettier --write "**/*.{json,yml,yaml,md}"
+      ;;
+    *)
+      echo "Unknown target: {{ target }}"
+      exit 1
+      ;;
+  esac
 
 # Run pgadmin
 # When connecting to DB, the host name must be `host.docker.internal`.
