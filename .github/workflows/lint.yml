@@ -1,0 +1,116 @@
+name: Lint Code
+
+on:
+# TODO: Uncomment when using
+  # pull_request:
+  #   types:
+  #     - synchronize
+  #     - opened
+  #     - reopened
+  #     - unlocked
+  #   paths:
+  #   # TODO: Needs customization per repository.
+  #     - "src/backend/**"
+  #     - "src/frontend/**"
+  #     - "src/go/**"
+  #     - "**/*.json"
+  #     - "**/*.yml"
+  #     - "**/*.yaml"
+  #     - "**/*.md"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #   # TODO: Needs customization per repository.
+  #     - "src/backend/**"
+  #     - "src/frontend/**"
+  #     - "src/go/**"
+  #     - "**/*.json"
+  #     - "**/*.yml"
+  #     - "**/*.yaml"
+  #     - "**/*.md"
+  workflow_dispatch:
+
+jobs:
+  lint-backend:
+    name: Lint Backend Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.11.0"
+
+      - name: Install Prettier globally
+        run: npm install -g prettier
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install dependencies
+        run: just deps-backend
+
+      - name: Lint Backend
+        run: just lint backend
+
+  lint-frontend:
+    name: Lint Frontend Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.11.0"
+
+      - name: Install Prettier globally
+        run: npm install -g prettier
+
+      - uses: extractions/setup-just@v3
+
+      - name: Install dependencies
+        run: just deps-frontend
+
+      - name: Lint Frontend
+        run: just lint frontend
+
+  lint-go:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Go 1.23
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - uses: extractions/setup-just@v3
+
+      - name: Lint Go
+        run: just lint go
+
+  lint-config:
+    name: Lint Config Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22.11.0"
+
+      - name: Install Prettier globally
+        run: npm install -g prettier
+
+      - uses: extractions/setup-just@v3
+
+      - name: Lint Config Files
+        run: just lint config
