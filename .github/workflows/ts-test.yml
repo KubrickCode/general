@@ -1,21 +1,21 @@
 name: Test
 
 on:
-# TODO: Uncomment when using
-# pull_request:
-#   types:
-#     - synchronize
-#     - opened
-#     - reopened
-#     - unlocked
-#   paths:
-#     - "src/backend/**"
-# push:
-#   branches:
-#     - main
-#   paths:
-#     - "src/backend/**"
-# workflow_dispatch:
+  # TODO: Uncomment when using
+  # pull_request:
+  #   types:
+  #     - synchronize
+  #     - opened
+  #     - reopened
+  #     - unlocked
+  #   paths:
+  #     - "src/backend/**"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "src/backend/**"
+  workflow_dispatch:
 
 jobs:
   test:

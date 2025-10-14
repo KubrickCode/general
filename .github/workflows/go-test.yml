@@ -1,21 +1,21 @@
 name: Go Tests
 
 on:
-# TODO: Uncomment when using
-# pull_request:
-#   types:
-#     - synchronize
-#     - opened
-#     - reopened
-#     - unlocked
-#   paths:
-#     - "src/go/**"
-# push:
-#   branches:
-#     - main
-#   paths:
-#     - "src/go/**"
-# workflow_dispatch:
+  # TODO: Uncomment when using
+  # pull_request:
+  #   types:
+  #     - synchronize
+  #     - opened
+  #     - reopened
+  #     - unlocked
+  #   paths:
+  #     - "src/go/**"
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - "src/go/**"
+  workflow_dispatch:
 
 jobs:
   go-tests:
