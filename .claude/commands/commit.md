@@ -84,6 +84,7 @@ Solution:
 - Include reasoning and justification when explaining solutions
 - Keep descriptions concise - avoid verbose explanations
 - If branch name ends with number (e.g., develop/32, develop/shlee/32), add "fix #N" at the end
+- **When multiple changes/reasons exist, use bullet points (-) for better readability**
 
 ## Examples
 
@@ -100,6 +101,15 @@ Fix login button not responding with empty fields
 
 Login attempts with empty input fields showed no response
 Added client-side validation and error message display
+```
+
+**For multiple changes/reasons, use list format:**
+
+```
+Backend architect agent role redefinition
+
+- Changed focus from API design to system structure design
+- Modified to concentrate on domain modeling, layered architecture, and modularization strategy
 ```
 
 ### Standard
