@@ -1,84 +1,84 @@
 ---
 name: business-rule-documentation
 description: |
-  비즈니스 로직 문서 작성을 위한 표준 템플릿. 도메인 개요, 핵심 개념, 비즈니스 규칙, 프로세스 흐름, 용어집을 체계적으로 문서화.
-  TRIGGER: 도메인 문서화, 비즈니스 로직 문서, 비즈니스 규칙 문서, 도메인 개념 정리, 프로세스 문서화
+  Standard template for documenting business logic. Systematically document domain overview, core concepts, business rules, process flows, and glossary.
+  TRIGGER: Domain documentation, business logic documentation, business rules documentation, domain concept organization, process documentation
 ---
 
 # Business Rule Documentation Guide
 
-## 기본 원칙
+## Basic Principles
 
-- 간결하고 명확하게
-- 실행 가능한 예시와 함께
-- "왜"에 집중
+- Concise and clear
+- With actionable examples
+- Focus on the "why"
 
-## 비즈니스 로직 문서
+## Business Logic Documentation
 
-**파일:** `docs/domain/{도메인명}.md` 또는 해당 모듈의 `README.md`
+**File:** `docs/domain/{domain-name}.md` or the module's `README.md`
 
-### [도메인명]
+### [Domain Name]
 
-#### 개요
+#### Overview
 
-이 도메인이 다루는 비즈니스 영역 (1-2문장)
+The business area covered by this domain (1-2 sentences)
 
-#### 핵심 개념
+#### Core Concepts
 
-**[개념명]**
+**[Concept Name]**
 
-**정의:** 명확한 정의
+**Definition:** Clear definition
 
-**예시:**
+**Example:**
 
 ```typescript
-// 실제 사용 예시 코드
+// Actual usage example code
 ```
 
-**코드 위치:** `src/domain/concept.ts`
+**Code Location:** `src/domain/concept.ts`
 
-#### 비즈니스 규칙
+#### Business Rules
 
-**[규칙명]**
+**[Rule Name]**
 
-- **내용:** 규칙 설명
-- **이유:** 왜 이 규칙이 필요한가
-- **예외 (있다면):** 예외 상황
-- **코드 위치:** `src/domain/rules.ts:45-67`
+- **Content:** Rule description
+- **Reason:** Why this rule is necessary
+- **Exceptions (if any):** Exception scenarios
+- **Code Location:** `src/domain/rules.ts:45-67`
 
-#### 프로세스 흐름 (복잡한 경우만)
+#### Process Flow (Complex cases only)
 
-**[프로세스명]**
+**[Process Name]**
 
-1. 단계 1 → `src/service/step1.ts`
-2. 단계 2 → `src/service/step2.ts`
-3. 단계 3 → `src/service/step3.ts`
+1. Step 1 → `src/service/step1.ts`
+2. Step 2 → `src/service/step2.ts`
+3. Step 3 → `src/service/step3.ts`
 
-#### 주의사항 (있다면)
+#### Cautions (if any)
 
-- 흔히 실수하는 부분
-- 변경 시 주의할 점
+- Common mistake areas
+- Things to watch for when making changes
 
-#### 용어집 (필요한 경우만)
+#### Glossary (if needed)
 
-- **용어1:** 정의
-- **용어2:** 정의
+- **Term 1:** Definition
+- **Term 2:** Definition
 
-## 문서 관리
+## Document Management
 
-### 문서 위치
+### Document Location
 
 ```
 project-root/
 ├── docs/
-│   ├── work/          # 작업 가이드라인 (작업 완료 후 삭제)
-│   └── domain/        # 비즈니스 로직 문서 (지속 유지)
-├── WORK_SUMMARY.md    # 작업 보고서 (확인 후 즉시 삭제)
+│   ├── work/          # Work guidelines (delete after work completion)
+│   └── domain/        # Business logic documentation (maintained continuously)
+├── WORK_SUMMARY.md    # Work summary report (delete immediately after review)
 └── README.md
 ```
 
-### 생명주기
+### Lifecycle
 
-- **작업 가이드라인:** 작업 완료 후 삭제
-- **작업 보고서:** 확인 즉시 삭제
-- **비즈니스 로직 문서:** 코드와 함께 유지보수
+- **Work Guidelines:** Delete after work completion
+- **Work Summary Report:** Delete immediately after review
+- **Business Logic Documentation:** Maintain alongside code

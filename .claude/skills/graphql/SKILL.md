@@ -1,26 +1,26 @@
 ---
 name: graphql
 description: |
-  GraphQL API 스키마 설계 및 구현 가이드. 타입 정의, 쿼리/뮤테이션 설계, 페이지네이션, 에러 처리 등 표준.
-  TRIGGER: GraphQL 스키마 작성, 타입 정의, Resolver 구현, Connection 설계, N+1 문제 해결
+  GraphQL API schema design and implementation guide. Type definitions, query/mutation design, pagination, error handling standards.
+  TRIGGER: GraphQL schema writing, type definition, Resolver implementation, Connection design, N+1 problem solving
 ---
 
 # GraphQL API Standards
 
-## 네이밍 규칙
+## Naming Conventions
 
-### 필드 네이밍
+### Field Naming
 
-- boolean: `is/has/can` 접두사 강제
-- 날짜: `~At` 접미사 강제
-- 같은 개념은 프로젝트 전체 동일 용어 (create vs add 중 하나로 통일)
+- Boolean: Require `is/has/can` prefix
+- Date: Require `~At` suffix
+- Use consistent terminology throughout the project (unify on either "create" or "add")
 
-## 날짜 형식
+## Date Format
 
 - ISO 8601 UTC
-- DateTime 타입 사용
+- Use DateTime type
 
-## 페이지네이션
+## Pagination
 
 ### Relay Connection Specification
 
@@ -41,43 +41,43 @@ type PageInfo {
 }
 ```
 
-- 파라미터: `first`, `after`
+- Parameters: `first`, `after`
 
-## 정렬
+## Sorting
 
 - `orderBy: [{ field: "createdAt", order: DESC }]`
 
-## 타입 네이밍
+## Type Naming
 
-- Input: `{동사}{타입}Input`
-- Connection: `{타입}Connection`
-- Edge: `{타입}Edge`
+- Input: `{Verb}{Type}Input`
+- Connection: `{Type}Connection`
+- Edge: `{Type}Edge`
 
 ## Input
 
-- 생성/수정 분리 (생성은 필수, 수정은 선택)
-- 중첩 피하기 - ID만
+- Separate creation and modification (required for creation, optional for modification)
+- Avoid nesting - IDs only
 
-## 에러
+## Errors
 
-### extensions (기본)
+### extensions (default)
 
-- `errors[].extensions`에 `code`, `field`
+- `code`, `field` in `errors[].extensions`
 
-### Union (타입 안정성)
+### Union (type safety)
 
 - `User | ValidationError`
 
 ## N+1
 
-- DataLoader 강제
+- DataLoader is mandatory
 
-## 문서화
+## Documentation
 
-- `"""설명"""` 필수
-- Input 제약사항 명시
+- `"""description"""` is required
+- Explicitly state Input constraints
 
 ## Deprecation
 
 - `@deprecated(reason: "...")`
-- 타입 삭제 금지
+- Never delete types

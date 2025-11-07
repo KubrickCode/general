@@ -1,145 +1,145 @@
 ---
 name: golang
 description: |
-  Go 언어 코드 작성을 위한 코딩 컨벤션과 모범 사례. 관용적 Go 스타일, 에러 처리, 테스트 작성 가이드.
-  TRIGGER: .go 파일 작업, Go 모듈 개발, 인터페이스 설계, 테스트 작성, 에러 처리 패턴
+  Coding conventions and best practices for writing Go code. Idiomatic Go style, error handling, and testing guide.
+  TRIGGER: .go file work, Go module development, interface design, test writing, error handling patterns
 ---
 
 # Go Coding Standards
 
-## 기본 원칙
+## Basic Principles
 
-### 한 함수는 한 가지 일만
+### One Function, One Responsibility
 
-- 함수 이름이 "and" 혹은 "or"로 연결되는 상황이면 분리 신호
-- 테스트 케이스가 if 분기마다 필요하면 분리 신호
+- If function name connects with "and" or "or", it's a signal to split
+- If test cases are needed for each if branch, it's a signal to split
 
-### 조건문과 반복문의 depth는 2단계까지만 허용
+### Conditional and Loop Depth Limited to 2 Levels
 
-- 최대한 early return으로 depth 줄이기
-- 그조차 무거워지면 별도 함수로 분리
+- Minimize depth using early return whenever possible
+- If still heavy, extract into separate functions
 
-### 함수의 사이드 이펙트는 명시할 것
+### Make Function Side Effects Explicit
 
-- 예: `getUser`가 `updateLastAccess()`도 실행한다면 함수명에 명시
+- Example: If `getUser` also runs `updateLastAccess()`, specify it in the function name
 
-### 가능하면 매직 넘버/문자열은 상수화
+### Convert Magic Numbers/Strings to Constants When Possible
 
-- 사용처 파일 상단에 선언
-- 상수가 많아지면 상수 파일 분리 검토
+- Declare at the top of the file where used
+- Consider separating into a constants file if there are many
 
-### 함수 순서는 호출 순서대로
+### Function Order by Call Order
 
-- Go의 명확한 컨벤션이 있다면 해당 규칙 따르기
-- 그 외에는 위에서 아래로 읽기 쉽게 호출 순서대로
+- Follow Go's clear conventions if they exist
+- Otherwise, order top-to-bottom for easy reading by call order
 
-### 구현이 복잡해지면 외부 라이브러리 사용 검토
+### Review External Libraries for Complex Implementations
 
-- 로직이 복잡하여 테스트 코드까지 비대해지는 상황
-- 업계 표준 라이브러리가 있다면 사용
-- 보안, 정확성, 성능 최적화가 핵심인 경우
-- 플랫폼 호환성, 엣지 케이스가 많은 경우
+- When logic is complex and tests become bloated
+- If industry-standard libraries exist, use them
+- When security, accuracy, or performance optimization is critical
+- When platform compatibility or edge cases are numerous
 
-### 모듈화(코드 복붙 및 패턴 반복 방지)
+### Modularization (Prevent Code Duplication and Pattern Repetition)
 
-- 코드 반복을 절대적으로 금지
-- 비슷한 패턴도 재사용 가능한 형태로 모듈화
-- 재사용이 확정적이면 미리 모듈화 허용
-- 과도한 추상화는 피하기
-- 모듈화 레벨:
-  - 같은 파일: 별도 함수로 추출
-  - 여러 파일: 별도 패키지로 분리
-  - 여러 프로젝트/도메인: 별도 모듈로 분리
+- Absolutely forbid code repetition
+- Modularize similar patterns into reusable forms
+- Allow pre-modularization if reuse is confirmed
+- Avoid excessive abstraction
+- Modularization levels:
+  - Same file: Extract into separate function
+  - Multiple files: Separate into different package
+  - Multiple projects/domains: Separate into different module
 
-### 변수, 함수명
+### Variable and Function Names
 
-- 목적을 명확히 하면서도 간결하게
-- 업계 표준 축약어(id, api, db, err 등) 외 축약어 금지
-- 상위 컨텍스트 정보는 반복하지 않기
-- boolean 변수는 `is`, `has`, `should` 등 접두사
-- 함수명은 동사 혹은 동사+명사 형태
-- 복수형 규칙:
-  - 순수 배열/슬라이스: "s" 접미 (`users`)
-  - 래핑된 구조체: "list" 접미 (`userList`)
-  - 특정 자료구조: 명시 (`userSet`, `userMap`)
-  - 이미 복수형인 단어: 그대로 사용
+- Clear purpose while being concise
+- Forbid abbreviations outside industry standards (id, api, db, err, etc.)
+- Don't repeat context from the parent scope
+- Boolean variables use `is`, `has`, `should` prefixes
+- Function names are verbs or verb+noun forms
+- Plural rules:
+  - Pure arrays/slices: "s" suffix (`users`)
+  - Wrapped struct: "list" suffix (`userList`)
+  - Specific data structure: Explicit (`userSet`, `userMap`)
+  - Already plural words: Use as-is
 
-### 필드 순서
+### Field Order
 
-- 기본적으로 알파벳 오름차순
-- 사용처에서도 일관성 유지
+- Alphabetically ascending by default
+- Maintain consistency in usage
 
-### 에러 처리
+### Error Handling
 
-- 에러 처리 레벨: 의미 있는 대응 가능한 곳에서 처리
-- 에러 메시지: 로그엔 기술적 세부사항, 사용자엔 실행 가능한 가이드
-- 에러 분류: 예상 가능한 에러와 예상 불가능한 에러 구분
-- 에러 전파: 호출 스택 상위로 전파 시 컨텍스트 추가
-- 복구 vs 빠른 실패: 예상 가능한 에러는 폴백으로 복구
-- 에러 체인이 필요하면 %w, 단순 로깅용이면 %v 사용
-- 외부로 노출하면 안 되는 내부 에러는 %v로 랩핑
-- 에러를 반환하는 함수의 return error는 절대 무시하지 말고 명시적으로 처리
-- Sentinel 에러: 호출자가 처리해야 하는 예상 조건은 `var ErrNotFound = errors.New("not found")`
+- Error handling level: Handle where meaningful response is possible
+- Error messages: Technical details for logs, actionable guidance for users
+- Error classification: Distinguish between expected and unexpected errors
+- Error propagation: Add context when propagating up the call stack
+- Recovery vs. fast fail: Recover from expected errors with fallback
+- Use %w for error chains, %v for simple logging
+- Wrap internal errors not to be exposed with %v
+- Never ignore return errors from functions; handle them explicitly
+- Sentinel errors: For expected conditions that callers must handle, use `var ErrNotFound = errors.New("not found")`
 
-## 파일 구조
+## File Structure
 
-### 파일 내 요소 순서
+### Element Order in File
 
-1. package 선언
-2. import문 (그룹화)
-3. 상수 정의 (const)
-4. 변수 정의 (var)
-5. Type/Interface/Struct 정의
-6. 생성자 함수 (New\*)
-7. 메서드 (리시버 타입별 그룹화, 알파벳순)
-8. 헬퍼 함수 (알파벳순)
+1. package declaration
+2. import statements (grouped)
+3. Constant definitions (const)
+4. Variable definitions (var)
+5. Type/Interface/Struct definitions
+6. Constructor functions (New\*)
+7. Methods (grouped by receiver type, alphabetically ordered)
+8. Helper functions (alphabetically ordered)
 
-## 인터페이스와 구조체
+## Interfaces and Structs
 
-### 인터페이스 정의 위치
+### Interface Definition Location
 
-- 인터페이스는 사용하는 패키지에 정의 (Accept interfaces, return structs)
-- 여러 패키지에서 공통으로 쓰는 인터페이스만 별도 패키지
+- Define interfaces in the package that uses them (Accept interfaces, return structs)
+- Only separate shared interfaces used by multiple packages
 
-### 포인터 리시버 규칙
+### Pointer Receiver Rules
 
-- 상태 변경, 큰 구조체(3개 필드 이상), 일관성이 필요한 경우 포인터 리시버
-- 나머지는 값 리시버
+- Use pointer receivers for state modification, large structs (3+ fields), or when consistency is needed
+- Use value receivers otherwise
 
-## Context 사용
+## Context Usage
 
-### Context 파라미터
+### Context Parameter
 
-- 항상 첫 번째 파라미터로 전달
-- context.Background()는 main과 테스트에서만 사용
+- Always pass as the first parameter
+- Use `context.Background()` only in main and tests
 
-## 테스트
+## Testing
 
-### 테스트 라이브러리
+### Testing Libraries
 
-- assertion 라이브러리(testify 등)보다 표준 라이브러리의 if + t.Errorf 선호
-- mock은 gomock보다 수동 구현 선호
+- Prefer standard library's if + t.Errorf over assertion libraries like testify
+- Prefer manual mocking over gomock
 
-## 금지 사항
+## Forbidden Practices
 
-### init() 함수
+### init() Functions
 
-- 왠만해서 사용 금지. 명시적 초기화 함수 선호
+- Generally forbidden. Prefer explicit initialization functions
 
-## 패키지 구조
+## Package Structure
 
-### internal 패키지
+### internal Package
 
-- 라이브러리는 적극 활용, 애플리케이션은 필요시만
+- Actively use for libraries, use only when necessary for applications
 
-## 추천 라이브러리
+## Recommended Libraries
 
-- 웹: Fiber
-- DB: Bun, SQLBoiler(외부 마이그레이션 관리 시)
-- 로깅: slog
+- Web: Fiber
+- DB: Bun, SQLBoiler (when managing migrations externally)
+- Logging: slog
 - CLI: cobra
-- 유틸리티: samber/lo, golang.org/x/sync
-- 설정 관리: koanf(cobra 통합 필요한 경우 viper)
-- 유효성 검증: go-playground/validator/v10
-- 스케줄링: github.com/go-co-op/gocron
-- 이미지 처리: github.com/h2non/bimg
+- Utilities: samber/lo, golang.org/x/sync
+- Configuration: koanf (viper if cobra integration needed)
+- Validation: go-playground/validator/v10
+- Scheduling: github.com/go-co-op/gocron
+- Image processing: github.com/h2non/bimg

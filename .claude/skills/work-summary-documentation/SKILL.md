@@ -1,57 +1,57 @@
 ---
 name: work-summary-documentation
 description: |
-  작업 보고서 작성을 위한 표준 템플릿. 완료 내용, 변경된 파일, 테스트 방법, 주의사항, 후속 작업을 체계적으로 문서화.
-  TRIGGER: 작업 완료 보고서, 작업 요약, 변경사항 문서화, 테스트 방법 문서화, 작업 결과 보고서
+  Standard template for work summary report. Systematically document completion content, changed files, testing method, precautions, and follow-up tasks.
+  TRIGGER: Work completion report, work summary, change documentation, testing method documentation, work result report
 ---
 
 # Work Summary Documentation Guide
 
-## 기본 원칙
+## Basic Principles
 
-- 간결하고 명확하게
-- 실행 가능한 예시와 함께
-- "왜"에 집중
+- Concise and clear
+- With actionable examples
+- Focus on the "why"
 
-## 작업 보고서
+## Work Summary Report
 
-**파일:** `WORK_SUMMARY.md` (프로젝트 루트, 확인 후 삭제)
+**File:** `WORK_SUMMARY.md` (project root, delete after review)
 
-### 완료 내용
+### Completed Content
 
-- [x] 작업 1
-- [x] 작업 2
-- [ ] 보류: 이유
+- [x] Task 1
+- [x] Task 2
+- [ ] Pending: Reason
 
-### 변경된 파일
+### Changed Files
 
-**추가**
+**Added**
 
-- `src/new/file.ts`: 설명
+- `src/new/file.ts`: Description
 
-**수정**
+**Modified**
 
-- `src/existing.ts:45`: 변경 내용
+- `src/existing.ts:45`: What changed
 
-**삭제** (있다면)
+**Deleted** (if any)
 
-- `src/old/file.ts`: 삭제 이유
+- `src/old/file.ts`: Reason for deletion
 
-### 테스트 방법
+### Testing Method
 
-**구체적인 기능 테스트 방법 서술**
+**Describe specific feature testing method**
 
-**확인할 엣지 케이스 (있다면)**
+**Edge Cases to Check (if any)**
 
-- 케이스 1: 예상 동작
-- 케이스 2: 예상 동작
+- Case 1: Expected behavior
+- Case 2: Expected behavior
 
-**주의사항 (있다면)**
+**Precautions (if any)**
 
-- 환경변수 추가: `KEY=value`
-- 의존성 설치: `npm install`
-- 마이그레이션: `npm run migrate`
+- Add environment variable: `KEY=value`
+- Install dependencies: `npm install`
+- Migration: `npm run migrate`
 
-**후속 작업 (있다면)**
+**Follow-up Tasks (if any)**
 
-- TODO: 구체적 내용
+- TODO: Specific content

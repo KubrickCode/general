@@ -1,177 +1,177 @@
 ---
 name: typescript
 description: |
-  TypeScript 코드 작성을 위한 코딩 컨벤션과 모범 사례. 타입 안정성, 클린 코드, 일관된 스타일을 보장.
-  TRIGGER: .ts, .tsx 파일 작업, TypeScript 관련 질문, 타입 정의, 인터페이스 설계, React/Node.js 개발
+  Coding conventions and best practices for writing TypeScript code. Ensure type safety, clean code, and consistent style.
+  TRIGGER: .ts, .tsx file work, TypeScript questions, type definition, interface design, React/Node.js development
 ---
 
 # TypeScript Coding Standards
 
-## 기본 원칙
+## Basic Principles
 
-### 한 함수는 한 가지 일만
+### One Function, One Responsibility
 
-- 함수 이름이 "and" 혹은 "or"로 연결되는 상황이면 분리 신호
-- 테스트 케이스가 if 분기마다 필요하면 분리 신호
+- If function name connects with "and" or "or", it's a signal to split
+- If test cases are needed for each if branch, it's a signal to split
 
-### 조건문과 반복문의 depth는 2단계까지만 허용
+### Conditional and Loop Depth Limited to 2 Levels
 
-- 최대한 early return으로 depth 줄이기
-- 그조차 무거워지면 별도 함수로 분리
+- Minimize depth using early return whenever possible
+- If still heavy, extract into separate functions
 
-### 함수의 사이드 이펙트는 명시할 것
+### Make Function Side Effects Explicit
 
-- 예: `getUser`가 `updateLastAccess()`도 실행한다면 함수명에 명시
+- Example: If `getUser` also runs `updateLastAccess()`, specify it in the function name
 
-### 가능하면 매직 넘버/문자열은 상수화
+### Convert Magic Numbers/Strings to Constants When Possible
 
-- 사용처 파일 혹은 클래스 상단에 선언
-- 상수가 많아지면 상수 파일 분리 검토
+- Declare at the top of the file or class where used
+- Consider separating into a constants file if there are many
 
-### 함수 순서는 호출 순서대로
+### Function Order by Call Order
 
-- 클래스 내 접근제한자 선언 순서 규칙이 명확하다면 해당 규칙 따르기
-- 그 외에는 위에서 아래로 읽기 쉽게 호출 순서대로
+- Follow class access modifier declaration order rules if clear
+- Otherwise, order top-to-bottom for easy reading by call order
 
-### 구현이 복잡해지면 외부 라이브러리 사용 검토
+### Review External Libraries for Complex Implementations
 
-- 로직이 복잡하여 테스트 코드까지 비대해지는 상황
-- 업계 표준 라이브러리가 있다면 사용
-- 보안, 정확성, 성능 최적화가 핵심인 경우
-- 브라우저/플랫폼 호환성, 엣지 케이스가 많은 경우
+- When logic is complex and tests become bloated
+- If industry-standard libraries exist, use them
+- When security, accuracy, or performance optimization is critical
+- When browser/platform compatibility or edge cases are numerous
 
-### 모듈화(코드 복붙 및 패턴 반복 방지)
+### Modularization (Prevent Code Duplication and Pattern Repetition)
 
-- 코드 반복을 절대적으로 금지
-- 비슷한 패턴도 재사용 가능한 형태로 모듈화
-- 재사용이 확정적이면 미리 모듈화 허용
-- 과도한 추상화는 피하기
-- 모듈화 레벨:
-  - 같은 파일: 별도 함수로 추출
-  - 여러 파일: 별도 파일로 분리
-  - 여러 프로젝트/도메인: 패키지로 분리
+- Absolutely forbid code repetition
+- Modularize similar patterns into reusable forms
+- Allow pre-modularization if reuse is confirmed
+- Avoid excessive abstraction
+- Modularization levels:
+  - Same file: Extract into separate function
+  - Multiple files: Separate into different file
+  - Multiple projects/domains: Separate into package
 
-### 변수, 함수명
+### Variable and Function Names
 
-- 목적을 명확히 하면서도 간결하게
-- 업계 표준 축약어(id, api, db, err 등) 외 축약어 금지
-- 상위 컨텍스트 정보는 반복하지 않기
-- boolean 변수는 `is`, `has`, `should` 등 접두사
-- 함수명은 동사 혹은 동사+명사 형태
-- 복수형 규칙:
-  - 순수 배열: "s" 접미 (`users`)
-  - 래핑된 객체: "list" 접미 (`userList`)
-  - 특정 자료구조: 명시 (`userSet`, `userMap`)
-  - 이미 복수형인 단어: 그대로 사용
+- Clear purpose while being concise
+- Forbid abbreviations outside industry standards (id, api, db, err, etc.)
+- Don't repeat context from the parent scope
+- Boolean variables use `is`, `has`, `should` prefixes
+- Function names are verbs or verb+noun forms
+- Plural rules:
+  - Pure arrays: "s" suffix (`users`)
+  - Wrapped object: "list" suffix (`userList`)
+  - Specific data structure: Explicit (`userSet`, `userMap`)
+  - Already plural words: Use as-is
 
-### 필드 순서
+### Field Order
 
-- 기본적으로 알파벳 오름차순
-- 사용처에서도 일관성 유지
-- 구조 분해 할당 시에도 알파벳순
+- Alphabetically ascending by default
+- Maintain consistency in usage
+- Also alphabetically ordered in destructuring assignment
 
-### 에러 처리
+### Error Handling
 
-- 에러 처리 레벨: 의미 있는 대응 가능한 곳에서 처리
-- 에러 메시지: 로그엔 기술적 세부사항, 사용자엔 실행 가능한 가이드
-- 에러 분류: 예상 가능한 에러와 예상 불가능한 에러 구분
-- 에러 전파: 호출 스택 상위로 전파 시 컨텍스트 추가
-- 복구 vs 빠른 실패: 예상 가능한 에러는 폴백으로 복구
-- 에러 타입: 도메인별 실패는 가능하면 `Error`를 상속한 커스텀 에러 클래스 생성. Error 아닌 객체 throw 금지
-- 비동기 에러: Promise rejection 항상 처리. async/await엔 try-catch, promise chain엔 .catch() 사용
+- Error handling level: Handle where meaningful response is possible
+- Error messages: Technical details for logs, actionable guidance for users
+- Error classification: Distinguish between expected and unexpected errors
+- Error propagation: Add context when propagating up the call stack
+- Recovery vs. fast fail: Recover from expected errors with fallback
+- Error types: For domain-specific failures, create custom error classes extending `Error`. Never throw non-Error objects
+- Async errors: Always handle Promise rejection. Use try-catch for async/await, .catch() for promise chains
 
-## 패키지 관리
+## Package Management
 
-### 패키지 매니저
+### Package Manager
 
-- pnpm을 기본 패키지 매니저로 사용
-- npm, yarn은 사용 금지 (lock 파일 충돌 방지)
+- Use pnpm as default package manager
+- Forbid npm, yarn (prevent lock file conflicts)
 
-## 파일 구조
+## File Structure
 
-### 모든 파일 공통
+### Common for All Files
 
-1. Import문 (그룹화)
-2. 상수 정의 (여러 개면 알파벳순)
-3. Type/Interface 정의 (여러 개면 알파벳순)
-4. 메인 내용 (아래 참조)
+1. Import statements (grouped)
+2. Constant definitions (alphabetically ordered if multiple)
+3. Type/Interface definitions (alphabetically ordered if multiple)
+4. Main content (see below)
 
-### 클래스 파일의 클래스 내부
+### Inside Classes
 
-- 데코레이터
-- private readonly 멤버
-- readonly 멤버
+- Decorators
+- private readonly members
+- readonly members
 - constructor
-- public 메서드 (알파벳순)
-- protected 메서드 (알파벳순)
-- private 메서드 (알파벳순)
+- public methods (alphabetically ordered)
+- protected methods (alphabetically ordered)
+- private methods (alphabetically ordered)
 
-### 함수형 파일의 함수 배치
+### Function Placement in Function-Based Files
 
-- 메인 export 함수
-- 추가 export 함수들 (알파벳순, 많은 것은 지양)
-- 헬퍼 함수
+- Main exported function
+- Additional exported functions (alphabetically ordered, avoid many)
+- Helper functions
 
-## 함수 작성
+## Function Writing
 
-### 화살표 함수 사용
+### Use Arrow Functions
 
-- 클래스 내부 메서드 외 항상 화살표 함수로 함수 사용
-- function 키워드 전면 금지 (예외: generator function\*, 함수 호이스팅 등 기술적으로 불가능한 경우만)
+- Always use arrow functions except for class methods
+- Forbid function keyword entirely (exceptions: generator function\*, function hoisting etc. technically impossible cases only)
 
-### 함수 인자 Flat vs 객체
+### Function Arguments: Flat vs Object
 
-- 인자가 1개이거나, 더 이상 다른 인자가 추가될 여지가 확실치 않으면 Flat
-- 인자가 2개 이상일 때 대부분 객체 형태로 사용. 단 아래 기준에 부합하면 Flat 허용:
-  - 모두 필수 인자이면서 boolean 인자가 없을 때
-  - 모두 필수 인자이면서 순서가 명확한 상황 (예: (width,height), (start,end), (min,max), (from,to))
+- Use flat if single argument or uncertain of future additions
+- Use object form for 2+ arguments in most cases. Allow flat form when:
+  - All required arguments without boolean arguments
+  - All required arguments with clear order (e.g., (width,height), (start,end), (min,max), (from,to))
 
-## 타입 시스템
+## Type System
 
-### 타입 안정성
+### Type Safety
 
-- any, as, !, @ts-ignore, @ts-expect-error 등 불안정하게 타입 우회하는 방법 금지
-- 예외: 외부 라이브러리 타입 없거나 잘못된 경우, 빠른 개발 필요시 (주석으로 이유 명확히)
-- 타입가드가 명확한 경우 unknown 타입 일부 허용
-- 리터럴 타입(as const) 필요한 경우 as 어설션 허용
-- 리터럴 타입 및 HTML타입 등을 더 넓은 타입으로 넓히는 경우 as 어설션 허용
-- 타입 가드 직후 TypeScript 한계로 타입을 좁히지 못하는 경우 "!" 어설션 허용
-- 테스트 코드에서 @ts-ignore, @ts-expect-error 허용 (프로덕션은 절대 금지)
+- Forbid unsafe type bypasses like any, as, !, @ts-ignore, @ts-expect-error
+- Exceptions: Missing or incorrect external library types, rapid development needed (clarify reason in comments)
+- Allow some unknown type when type guard is clear
+- Allow as assertion when literal type (as const) needed
+- Allow as assertion when widening literal/HTML types to broader types
+- Allow "!" assertion when type narrowing impossible after type guard due to TypeScript limitation
+- Allow @ts-ignore, @ts-expect-error in test code (absolutely forbid in production)
 
 ### Interface vs Type
 
-- 기본적으로 모든 경우 Type을 우선 사용
-- 다음 예외 상황만 Interface 사용:
-  - 라이브러리 공개 API 등 외부 사용자에게 제공해야하는 경우
-  - 외부 라이브러리 등 이미 존재하는 interface를 확장해야하는 경우
-  - OOP스타일의 클래스를 설계할 때 클래스가 구현할 계약 사항을 명확히 정의해야하는 경우
+- Prioritize Type in all cases by default
+- Use Interface only for these exceptions:
+  - Public API provided to external users like library public API
+  - Need to extend existing interface like external libraries
+  - Designing OOP-style classes where implementation contract must be clearly defined
 
-### null/undefined 처리
+### null/undefined Handling
 
-- Optional Chaining (`?.`) 적극 사용
-- Nullish Coalescing (`??`)으로 기본값 제공
-- `null`과 `undefined` 중 하나만 사용 (일관성)
-  - 권장: `undefined` 사용 (함수 파라미터 기본값과 일관)
-  - `null`은 외부 API 응답 등 불가피한 경우에 사용
+- Actively use Optional Chaining (`?.`)
+- Provide defaults with Nullish Coalescing (`??`)
+- Use only one of `null` or `undefined` (consistency)
+  - Recommended: Use `undefined` (consistent with function parameter defaults)
+  - Use `null` only when unavoidable like external API responses
 
-## 코드 스타일
+## Code Style
 
-### 불변성 유지
+### Maintain Immutability
 
-- 가능하면 `const` 사용, `let`은 최소화
-- 배열/객체는 직접 수정 대신 새로운 값 생성
-- `push`, `splice` 대신 `spread`, `filter`, `map` 사용
-- 예외: 성능이 극도로 중요한 경우
+- Use `const` whenever possible, minimize `let`
+- Create new values instead of directly modifying arrays/objects
+- Use `spread`, `filter`, `map` instead of `push`, `splice`
+- Exceptions: Extremely performance-critical cases
 
-## 추천 라이브러리
+## Recommended Libraries
 
-- 테스팅: Jest, Playwright
-- 유틸리티: es-toolkit, dayjs
+- Testing: Jest, Playwright
+- Utilities: es-toolkit, dayjs
 - HTTP: ky, @tanstack/query, @apollo/client
 - Form: React Hook Form
-- 타입 검증: zod
+- Type validation: zod
 - UI: Tailwind + shadcn/ui
-- ORM: Prisma(edge 지원 중요하면 Drizzle)
-- 상태 관리: zustand
-- 코드 포맷: prettier, eslint
-- 빌드: tsup
+- ORM: Prisma (Drizzle if edge support important)
+- State management: zustand
+- Code formatting: prettier, eslint
+- Build: tsup

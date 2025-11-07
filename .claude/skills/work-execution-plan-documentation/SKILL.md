@@ -1,57 +1,57 @@
 ---
 name: work-execution-plan-documentation
 description: |
-  작업 가이드라인 문서 작성을 위한 표준 템플릿. 목표, 범위, 기술 선택, 작업 순서, 완료 조건을 체계적으로 문서화.
-  TRIGGER: 작업 계획, 프로젝트 계획, 태스크 가이드라인, 작업 가이드, 실행 계획, 구현 계획 문서 작성
+  Standard template for work guideline documentation. Systematically document goals, scope, technology choice, task order, and completion conditions.
+  TRIGGER: Work planning, project planning, task guidelines, work guide, execution plan, implementation plan documentation writing
 ---
 
 # Work Execution Plan Documentation Guide
 
-## 기본 원칙
+## Basic Principles
 
-- 간결하고 명확하게
-- 실행 가능한 예시와 함께
-- "왜"에 집중
+- Concise and clear
+- With actionable examples
+- Focus on the "why"
 
-## 작업 가이드라인
+## Work Guidelines
 
-**파일:** `docs/work/WORK-{작업명}.md` (작업 완료 후 삭제)
+**File:** `docs/work/WORK-{work-name}.md` (delete after work completion)
 
-### [작업명] 가이드라인
+### [Work Name] Guideline
 
-#### 목표
+#### Goal
 
-달성하고자 하는 것
+What you want to achieve
 
-#### 범위
+#### Scope
 
-**포함**
+**Included**
 
-- 다룰 것들
+- Things to cover
 
-**비포함**
+**Not Included**
 
-- 명확히 제외할 것들
+- Things explicitly excluded
 
-#### 기술 선택
+#### Technology Choice
 
-- 사용할 라이브러리/도구
-- 새로 추가할 의존성 (있다면 이유와 함께)
+- Libraries/tools to use
+- New dependencies to add (with reasons if any)
 
-#### 주요 고려사항 (해당하는 것만)
+#### Key Considerations (only applicable)
 
-- 성능:
-- 보안:
-- 호환성:
-- 테스트 전략:
+- Performance:
+- Security:
+- Compatibility:
+- Testing strategy:
 
-#### 작업 순서
+#### Task Order
 
-1. [ ] 구체적 작업 1
-2. [ ] 구체적 작업 2
-3. [ ] 구체적 작업 3
+1. [ ] Specific task 1
+2. [ ] Specific task 2
+3. [ ] Specific task 3
 
-#### 완료 조건
+#### Completion Conditions
 
-- [ ] 측정 가능한 조건 1
-- [ ] 측정 가능한 조건 2
+- [ ] Measurable condition 1
+- [ ] Measurable condition 2

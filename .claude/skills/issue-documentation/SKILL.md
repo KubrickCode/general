@@ -1,44 +1,43 @@
 ---
 name: issue-documentation
 description: |
-  이슈 문서 작성을 위한 표준 템플릿과 가이드. 문제 상황, 재현 방법, 해결 방안, 영향 범위를 체계적으로 문서화.
-  TRIGGER: 버그 리포트, 이슈 작성, 문제 상황 문서화, 트러블슈팅 문서, 버그 추적, GitHub/Linear 등 이슈 작성
+  Standard template and guide for issue documentation. Systematically document problem situation, reproduction method, solution, and impact scope.
+  TRIGGER: Bug report, issue writing, problem situation documentation, troubleshooting documentation, bug tracking, GitHub/Linear issue creation
 ---
 
 # Issue Documentation Guide
 
-## 기본 원칙
+## Basic Principles
 
-- 간결하고 명확하게
-- 실행 가능한 예시와 함께
-- "왜"에 집중
-- 문서는 기본적으로 번역을 부탁하지 않는 이상 항상 한국어로 작성할 것
+- Concise and clear
+- With actionable examples
+- Focus on the "why"
 
-## 이슈
+## Issue
 
-### 문제 상황
+### Problem Situation
 
-구체적으로 어떤 문제가 있는가?
+What is the specific problem?
 
-**재현 방법(재현이 필요하고, 재현이 가능한 이슈 한정):**
+**Reproduction Method (only for issues that need and can be reproduced):**
 
-1. 단계 1
-2. 단계 2
-3. 예상 결과 vs 실제 결과
+1. Step 1
+2. Step 2
+3. Expected result vs. actual result
 
-**관련 코드 위치 혹은 스크린샷 등 첨부**
+**Attach related code location or screenshots**
 
-### 해결 방안
+### Solution
 
-[선택한 방안]
+[Selected approach]
 
-구체적인 해결 방법 및 채택 이유 작성
+Write specific resolution method and reason for adoption
 
-#### 검토했지만 채택하지 않은 방안 (있다면)
+#### Reviewed but Rejected Approaches (if any)
 
-- 방안 A: 반려 이유
-- 방안 B: 반려 이유
+- Approach A: Reason for rejection
+- Approach B: Reason for rejection
 
-### 영향 범위 (있다면)
+### Impact Scope (if any)
 
-- 영향받는 부분
+- Affected parts
