@@ -8,4 +8,7 @@ services:
       # TODO: Modify to fit your project structure
       - ..:/workspaces/general:delegated
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOME}/.env.secrets:/root/.env.secrets:ro
+    env_file:
+      - ${HOME}/.env.secrets
     command: sleep infinity
