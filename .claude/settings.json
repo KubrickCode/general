@@ -1,7 +1,6 @@
 {
   "statusLine": {
     "type": "command",
-    // TODO: Modify the path to fit your project structure
     "command": "bash /workspaces/general/.claude/statusline.sh"
   },
   "hooks": {
@@ -11,7 +10,6 @@
         "hooks": [
           {
             "type": "command",
-            // TODO: Modify the path to fit your project structure
             "command": "bash /workspaces/general/.claude/notify.sh"
           }
         ]

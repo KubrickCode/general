@@ -5,7 +5,6 @@ services:
     image: mcr.microsoft.com/devcontainers/base:bookworm
     privileged: true
     volumes:
-      # TODO: Modify to fit your project structure
       - ..:/workspaces/general:delegated
       - /var/run/docker.sock:/var/run/docker.sock
       - ${HOME}/.env.secrets:/root/.env.secrets:ro
