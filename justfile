@@ -2,6 +2,9 @@ set dotenv-load
 
 root_dir := justfile_directory()
 
+deps-root:
+  yarn install
+
 generate-env:
   #!/usr/bin/env bash
   set -euox pipefail
@@ -41,12 +44,12 @@ lint target="all":
       just lint justfile
       ;;
     backend)
-      prettier --write "{{ backend_dir }}/src/**/*.ts"
+      npx prettier --write "{{ backend_dir }}/src/**/*.ts"
       cd "{{ backend_dir }}"
       yarn lint
       ;;
     frontend)
-      prettier --write "{{ frontend_dir }}/src/**/*.{ts,tsx}"
+      npx prettier --write "{{ frontend_dir }}/src/**/*.{ts,tsx}"
       cd "{{ frontend_dir }}"
       yarn eslint --fix --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
       ;;
@@ -54,7 +57,7 @@ lint target="all":
       gofmt -w "{{ root_dir }}/src/go"
       ;;
     config)
-      prettier --write "**/*.{json,yml,yaml,md}"
+      npx prettier --write "**/*.{json,yml,yaml,md}"
       ;;
     justfile)
       just --fmt --unstable
