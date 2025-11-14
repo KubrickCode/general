@@ -48,7 +48,7 @@ lint target="all":
     frontend)
       prettier --write "{{ frontend_dir }}/src/**/*.{ts,tsx}"
       cd "{{ frontend_dir }}"
-      yarn eslint --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
+      yarn eslint --fix --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
       ;;
     go)
       gofmt -w "{{ root_dir }}/src/go"
