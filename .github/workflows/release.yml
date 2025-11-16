@@ -1,4 +1,4 @@
-name: Release
+name: Release Package
 
 on:
   push:
@@ -7,10 +7,11 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   release:
-    name: Create GitHub Release
+    name: Build and Publish Package
     runs-on: ubuntu-latest
 
     steps:
@@ -18,52 +19,47 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Get version
-        id: version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=v$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version: v$VERSION"
-
-      - name: Check if release exists
-        id: check
-        run: |
-          if gh release view "v$(node -p "require('./package.json').version")" &>/dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️ Release already exists, skipping"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Generate changelog
-        id: changelog
-        if: steps.check.outputs.exists == 'false'
-        run: |
-          CURRENT="v$(node -p "require('./package.json').version")"
-          PREVIOUS=$(git tag --sort=-v:refname | grep -v "$CURRENT" | head -1 || echo "")
-
-          if [ -z "$PREVIOUS" ]; then
-            echo "changelog=Initial MVP release" >> $GITHUB_OUTPUT
-          else
-            CHANGELOG=$(git log $PREVIOUS..HEAD --pretty=format:"- %s" --no-merges)
-            echo "changelog<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGELOG" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create GitHub Release
-        if: steps.check.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: ${{ steps.version.outputs.version }}
-          body: |
-            ## 🚀 What's New in ${{ steps.version.outputs.version }}
+          version: 9.15.0
 
-            ${{ steps.changelog.outputs.changelog }}
-          generate_release_notes: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install just
+        uses: extractions/setup-just@v3
+
+      - name: Install dependencies
+        run: just deps
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run semantic-release
+        run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          HUSKY: 0
+
+      - name: Sync release to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin release
+          git fetch origin main
+          git checkout main
+          git merge origin/release --no-edit
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
