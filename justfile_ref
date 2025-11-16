@@ -3,7 +3,7 @@ set dotenv-load
 root_dir := justfile_directory()
 
 deps-root:
-  yarn install
+  pnpm install
 
 generate-env:
   #!/usr/bin/env bash
@@ -46,12 +46,12 @@ lint target="all":
     backend)
       npx prettier --write "{{ backend_dir }}/src/**/*.ts"
       cd "{{ backend_dir }}"
-      yarn lint
+      pnpm lint
       ;;
     frontend)
       npx prettier --write "{{ frontend_dir }}/src/**/*.{ts,tsx}"
       cd "{{ frontend_dir }}"
-      yarn eslint --fix --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
+      pnpm eslint --fix --ignore-pattern "generated.tsx" --max-warnings=0 "src/**/*.tsx"
       ;;
     go)
       gofmt -w "{{ root_dir }}/src/go"
@@ -107,9 +107,9 @@ test-ts mode="":
   #!/usr/bin/env bash
   cd "{{ ts_dir }}"
   if [ "{{ mode }}" = "watch" ]; then
-    yarn test:watch
+    pnpm test:watch
   elif [ "{{ mode }}" = "coverage" ]; then
-    yarn test --coverage
+    pnpm test --coverage
   else
-    yarn test
+    pnpm test
   fi

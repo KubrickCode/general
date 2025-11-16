@@ -1,7 +1,7 @@
 set dotenv-load := true
 
 deps:
-    yarn install
+    pnpm install
 
 lint target="all":
     #!/usr/bin/env bash
