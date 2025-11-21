@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, ready_for_review, converted_to_draft]
 
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   add-reviewer-on-open:
     if: github.event.action == 'opened'
@@ -13,12 +17,15 @@ jobs:
     steps:
       - name: Add owner as reviewer
         if: github.event.pull_request.user.login != github.repository_owner
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} \
-            --add-reviewer ${{ github.repository_owner }} \
-            --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr edit "$PR_NUMBER" \
+            --add-reviewer "$OWNER" \
+            --repo "$REPO"
 
   assign-and-sync-on-open:
     if: github.event.action == 'opened' && github.event.pull_request.user.login != 'dependabot[bot]'
@@ -28,233 +35,71 @@ jobs:
       issues: write
       contents: read
     steps:
+      - name: Checkout for scripts
+        uses: actions/checkout@v4
+
       - name: Assign PR to creator
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} \
-            --add-assignee ${{ github.event.pull_request.user.login }} \
-            --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          USER_LOGIN: ${{ github.event.pull_request.user.login }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr edit "$PR_NUMBER" \
+            --add-assignee "$USER_LOGIN" \
+            --repo "$REPO"
+
+      - name: Get linked issue
+        id: linked
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          RESULT=$("./.github/actions/project-status/scripts/get-linked-issue.sh" \
+            "$OWNER" \
+            "$REPO_NAME" \
+            "$PR_NUMBER")
+
+          echo "$RESULT" | grep "^has_linked_issue=" >> $GITHUB_OUTPUT
+          echo "$RESULT" | grep "^issue_number=" >> $GITHUB_OUTPUT || true
+          echo "$RESULT" | grep "^issue_node_id=" >> $GITHUB_OUTPUT || true
 
       - name: Sync labels from linked issue
+        if: steps.linked.outputs.has_linked_issue == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.linked.outputs.issue_number }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          # Get linked issues using GitHub's closingIssuesReferences
-          LINKED_ISSUES=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $prNumber: Int!) {
-              repository(owner: $owner, name: $repo) {
-                pullRequest(number: $prNumber) {
-                  closingIssuesReferences(first: 10) {
-                    nodes {
-                      number
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F prNumber=${{ github.event.pull_request.number }})
-
-          ISSUE_NUMBER=$(echo "$LINKED_ISSUES" | jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[0].number')
-
-          if [ -z "$ISSUE_NUMBER" ] || [ "$ISSUE_NUMBER" = "null" ]; then
-            echo "No linked issue found"
-            exit 0
+          ISSUE_LABELS=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json labels --jq '.labels[] | select(.name != "needs thinking") | .name')
+          if [ -n "$ISSUE_LABELS" ]; then
+            echo "$ISSUE_LABELS" | while read -r label; do
+              gh pr edit "$PR_NUMBER" --add-label "$label" --repo "$REPO"
+            done
           fi
 
-          echo "Found linked issue: #$ISSUE_NUMBER"
+      - name: Update linked issue status
+        if: steps.linked.outputs.has_linked_issue == 'true'
+        uses: ./.github/actions/project-status
+        with:
+          action: update-status
+          issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
+          target-status: ${{ github.event.pull_request.draft && 'Progress' || 'Review' }}
+          github-token: ${{ secrets.PAT_TOKEN }}
 
-          # Get issue labels (excluding "needs thinking")
-          ISSUE_LABELS=$(gh issue view $ISSUE_NUMBER --repo ${{ github.repository }} --json labels --jq '.labels[] | select(.name != "needs thinking") | .name')
-
-          if [ -z "$ISSUE_LABELS" ]; then
-            echo "No labels to copy from issue"
-            exit 0
-          fi
-
-          # Add issue labels to PR
-          echo "Adding labels to PR: $ISSUE_LABELS"
-          echo "$ISSUE_LABELS" | while read -r label; do
-            gh pr edit ${{ github.event.pull_request.number }} \
-              --add-label "$label" \
-              --repo ${{ github.repository }}
-          done
-
-      - name: Update linked issue status based on PR draft state
+      - name: Add Gemini review for non-draft PR
+        if: steps.linked.outputs.has_linked_issue == 'true' && !github.event.pull_request.draft
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          PROJECT_NUMBER: 4
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          IS_DRAFT="${{ github.event.pull_request.draft }}"
-
-          # Get linked issues using GitHub's closingIssuesReferences
-          LINKED_ISSUES=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $prNumber: Int!) {
-              repository(owner: $owner, name: $repo) {
-                pullRequest(number: $prNumber) {
-                  closingIssuesReferences(first: 10) {
-                    nodes {
-                      number
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F prNumber=${{ github.event.pull_request.number }})
-
-          ISSUE_NUMBER=$(echo "$LINKED_ISSUES" | jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[0].number')
-
-          if [ -z "$ISSUE_NUMBER" ] || [ "$ISSUE_NUMBER" = "null" ]; then
-            echo "No linked issue found"
-            exit 0
-          fi
-
-          echo "Found linked issue: #$ISSUE_NUMBER"
-          echo "PR draft status: $IS_DRAFT"
-
-          # Determine target status based on draft state
-          if [ "$IS_DRAFT" = "true" ]; then
-            TARGET_STATUS="Progress"
-            echo "PR is draft, will move issue to Progress"
-          else
-            TARGET_STATUS="Review"
-            echo "PR is ready for review, will move issue to Review"
-            
-            # Add Gemini review comment for non-draft PRs
-            gh pr comment ${{ github.event.pull_request.number }} \
-              --body "/gemini review" \
-              --repo ${{ github.repository }}
-          fi
-
-          # Get issue node ID
-          ISSUE_ID=$(gh issue view $ISSUE_NUMBER --repo ${{ github.repository }} --json id --jq '.id')
-
-          echo "Issue ID: $ISSUE_ID"
-
-          # Get project info
-          PROJECT_QUERY=$(gh api graphql -f query='
-            query($owner: String!, $number: Int!) {
-              user(login: $owner) {
-                projectV2(number: $number) {
-                  id
-                  fields(first: 20) {
-                    nodes {
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -F number="$PROJECT_NUMBER")
-
-          PROJECT_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.id')
-          STATUS_FIELD_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .id')
-          TARGET_OPTION_ID=$(echo "$PROJECT_QUERY" | jq -r --arg STATUS "$TARGET_STATUS" '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == $STATUS) | .id')
-
-          echo "Project ID: $PROJECT_ID"
-          echo "Status Field ID: $STATUS_FIELD_ID"
-          echo "Target Option ID: $TARGET_OPTION_ID"
-
-          # Find item with pagination
-          ITEM_ID=""
-          CURSOR=""
-          FOUND=false
-
-          for i in {1..10}; do
-            if [ -z "$CURSOR" ]; then
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID")
-            else
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!, $cursor: String!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100, after: $cursor) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID" -f cursor="$CURSOR")
-            fi
-            
-            ITEM_ID=$(echo "$ITEMS_QUERY" | jq -r --arg ISSUE_ID "$ISSUE_ID" '.data.node.items.nodes[] | select(.content.id == $ISSUE_ID) | .id')
-            
-            if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
-              FOUND=true
-              break
-            fi
-            
-            HAS_NEXT=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.hasNextPage')
-            if [ "$HAS_NEXT" = "false" ]; then
-              break
-            fi
-            
-            CURSOR=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.endCursor')
-          done
-
-          if [ "$FOUND" = false ] || [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
-            echo "Issue not found in project"
-            exit 0
-          fi
-
-          echo "Found item ID: $ITEM_ID"
-
-          # Update status
-          gh api graphql -f query='
-            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId
-                itemId: $itemId
-                fieldId: $fieldId
-                value: {singleSelectOptionId: $optionId}
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
-            }
-          ' -f projectId="$PROJECT_ID" -f itemId="$ITEM_ID" -f fieldId="$STATUS_FIELD_ID" -f optionId="$TARGET_OPTION_ID"
-
-          echo "Successfully moved issue to $TARGET_STATUS"
+          gh pr comment "$PR_NUMBER" \
+            --body "/gemini review" \
+            --repo "$REPO"
 
   ready-for-review:
     if: github.event.action == 'ready_for_review'
@@ -264,172 +109,43 @@ jobs:
       issues: write
       contents: read
     steps:
+      - name: Checkout for scripts
+        uses: actions/checkout@v4
+
       - name: Add Gemini review comment
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
+          gh pr comment "$PR_NUMBER" \
             --body "/gemini review" \
-            --repo ${{ github.repository }}
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN  }}
+            --repo "$REPO"
 
-      - name: Move linked issue to In Review
+      - name: Get linked issue
+        id: linked
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          PROJECT_NUMBER: 4
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Get linked issues using GitHub's closingIssuesReferences
-          LINKED_ISSUES=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $prNumber: Int!) {
-              repository(owner: $owner, name: $repo) {
-                pullRequest(number: $prNumber) {
-                  closingIssuesReferences(first: 10) {
-                    nodes {
-                      number
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F prNumber=${{ github.event.pull_request.number }})
+          RESULT=$("./.github/actions/project-status/scripts/get-linked-issue.sh" \
+            "$OWNER" \
+            "$REPO_NAME" \
+            "$PR_NUMBER")
 
-          ISSUE_NUMBER=$(echo "$LINKED_ISSUES" | jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[0].number')
+          echo "$RESULT" | grep "^has_linked_issue=" >> $GITHUB_OUTPUT
+          echo "$RESULT" | grep "^issue_node_id=" >> $GITHUB_OUTPUT || true
 
-          if [ -z "$ISSUE_NUMBER" ] || [ "$ISSUE_NUMBER" = "null" ]; then
-            echo "No linked issue found"
-            exit 0
-          fi
-
-          echo "Found linked issue: #$ISSUE_NUMBER"
-
-          # Get issue node ID
-          ISSUE_ID=$(gh issue view $ISSUE_NUMBER --repo ${{ github.repository }} --json id --jq '.id')
-
-          echo "Issue ID: $ISSUE_ID"
-
-          # Get project info
-          PROJECT_QUERY=$(gh api graphql -f query='
-            query($owner: String!, $number: Int!) {
-              user(login: $owner) {
-                projectV2(number: $number) {
-                  id
-                  fields(first: 20) {
-                    nodes {
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -F number="$PROJECT_NUMBER")
-
-          PROJECT_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.id')
-          STATUS_FIELD_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .id')
-          IN_REVIEW_OPTION_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Review") | .id')
-
-          echo "Project ID: $PROJECT_ID"
-          echo "Status Field ID: $STATUS_FIELD_ID"
-          echo "In Review Option ID: $IN_REVIEW_OPTION_ID"
-
-          # Find item with pagination
-          ITEM_ID=""
-          CURSOR=""
-          FOUND=false
-
-          for i in {1..10}; do
-            if [ -z "$CURSOR" ]; then
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID")
-            else
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!, $cursor: String!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100, after: $cursor) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID" -f cursor="$CURSOR")
-            fi
-            
-            ITEM_ID=$(echo "$ITEMS_QUERY" | jq -r --arg ISSUE_ID "$ISSUE_ID" '.data.node.items.nodes[] | select(.content.id == $ISSUE_ID) | .id')
-            
-            if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
-              FOUND=true
-              break
-            fi
-            
-            HAS_NEXT=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.hasNextPage')
-            if [ "$HAS_NEXT" = "false" ]; then
-              break
-            fi
-            
-            CURSOR=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.endCursor')
-          done
-
-          if [ "$FOUND" = false ] || [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
-            echo "Issue not found in project"
-            exit 0
-          fi
-
-          echo "Found item ID: $ITEM_ID"
-
-          # Update status to In Review
-          gh api graphql -f query='
-            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId
-                itemId: $itemId
-                fieldId: $fieldId
-                value: {singleSelectOptionId: $optionId}
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
-            }
-          ' -f projectId="$PROJECT_ID" -f itemId="$ITEM_ID" -f fieldId="$STATUS_FIELD_ID" -f optionId="$IN_REVIEW_OPTION_ID"
-
-          echo "Successfully moved issue to In Review"
+      - name: Move linked issue to Review
+        if: steps.linked.outputs.has_linked_issue == 'true'
+        uses: ./.github/actions/project-status
+        with:
+          action: update-status
+          issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
+          target-status: Review
+          github-token: ${{ secrets.PAT_TOKEN }}
 
   converted-to-draft:
     if: github.event.action == 'converted_to_draft'
@@ -439,161 +155,30 @@ jobs:
       issues: write
       contents: read
     steps:
-      - name: Move linked issue to In Progress
+      - name: Checkout for scripts
+        uses: actions/checkout@v4
+
+      - name: Get linked issue
+        id: linked
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-          PROJECT_NUMBER: 4
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Get linked issues using GitHub's closingIssuesReferences
-          LINKED_ISSUES=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $prNumber: Int!) {
-              repository(owner: $owner, name: $repo) {
-                pullRequest(number: $prNumber) {
-                  closingIssuesReferences(first: 10) {
-                    nodes {
-                      number
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F prNumber=${{ github.event.pull_request.number }})
+          RESULT=$("./.github/actions/project-status/scripts/get-linked-issue.sh" \
+            "$OWNER" \
+            "$REPO_NAME" \
+            "$PR_NUMBER")
 
-          ISSUE_NUMBER=$(echo "$LINKED_ISSUES" | jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[0].number')
+          echo "$RESULT" | grep "^has_linked_issue=" >> $GITHUB_OUTPUT
+          echo "$RESULT" | grep "^issue_node_id=" >> $GITHUB_OUTPUT || true
 
-          if [ -z "$ISSUE_NUMBER" ] || [ "$ISSUE_NUMBER" = "null" ]; then
-            echo "No linked issue found"
-            exit 0
-          fi
-
-          echo "Found linked issue: #$ISSUE_NUMBER"
-
-          # Get issue node ID
-          ISSUE_ID=$(gh issue view $ISSUE_NUMBER --repo ${{ github.repository }} --json id --jq '.id')
-
-          echo "Issue ID: $ISSUE_ID"
-
-          # Get project info
-          PROJECT_QUERY=$(gh api graphql -f query='
-            query($owner: String!, $number: Int!) {
-              user(login: $owner) {
-                projectV2(number: $number) {
-                  id
-                  fields(first: 20) {
-                    nodes {
-                      ... on ProjectV2SingleSelectField {
-                        id
-                        name
-                        options {
-                          id
-                          name
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' -f owner="${{ github.repository_owner }}" -F number="$PROJECT_NUMBER")
-
-          PROJECT_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.id')
-          STATUS_FIELD_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .id')
-          IN_PROGRESS_OPTION_ID=$(echo "$PROJECT_QUERY" | jq -r '.data.user.projectV2.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Progress") | .id')
-
-          echo "Project ID: $PROJECT_ID"
-          echo "Status Field ID: $STATUS_FIELD_ID"
-          echo "In Progress Option ID: $IN_PROGRESS_OPTION_ID"
-
-          # Find item with pagination
-          ITEM_ID=""
-          CURSOR=""
-          FOUND=false
-
-          for i in {1..10}; do
-            if [ -z "$CURSOR" ]; then
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID")
-            else
-              ITEMS_QUERY=$(gh api graphql -f query='
-                query($projectId: ID!, $cursor: String!) {
-                  node(id: $projectId) {
-                    ... on ProjectV2 {
-                      items(first: 100, after: $cursor) {
-                        pageInfo {
-                          hasNextPage
-                          endCursor
-                        }
-                        nodes {
-                          id
-                          content {
-                            ... on Issue {
-                              id
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ' -f projectId="$PROJECT_ID" -f cursor="$CURSOR")
-            fi
-            
-            ITEM_ID=$(echo "$ITEMS_QUERY" | jq -r --arg ISSUE_ID "$ISSUE_ID" '.data.node.items.nodes[] | select(.content.id == $ISSUE_ID) | .id')
-            
-            if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
-              FOUND=true
-              break
-            fi
-            
-            HAS_NEXT=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.hasNextPage')
-            if [ "$HAS_NEXT" = "false" ]; then
-              break
-            fi
-            
-            CURSOR=$(echo "$ITEMS_QUERY" | jq -r '.data.node.items.pageInfo.endCursor')
-          done
-
-          if [ "$FOUND" = false ] || [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
-            echo "Issue not found in project"
-            exit 0
-          fi
-
-          echo "Found item ID: $ITEM_ID"
-
-          # Update status to In Progress
-          gh api graphql -f query='
-            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId
-                itemId: $itemId
-                fieldId: $fieldId
-                value: {singleSelectOptionId: $optionId}
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
-            }
-          ' -f projectId="$PROJECT_ID" -f itemId="$ITEM_ID" -f fieldId="$STATUS_FIELD_ID" -f optionId="$IN_PROGRESS_OPTION_ID"
-
-          echo "Successfully moved issue to In Progress"
+      - name: Move linked issue to Progress
+        if: steps.linked.outputs.has_linked_issue == 'true'
+        uses: ./.github/actions/project-status
+        with:
+          action: update-status
+          issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
+          target-status: Progress
+          github-token: ${{ secrets.PAT_TOKEN }}
