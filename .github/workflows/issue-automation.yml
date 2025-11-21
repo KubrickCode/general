@@ -36,7 +36,7 @@ jobs:
           action: add-to-project
           issue-node-id: ${{ github.event.issue.node_id }}
           target-status: Backlog
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
 
   bug-to-in-progress:
     if: github.event.action == 'labeled' && github.event.label.name == 'bug'
@@ -54,7 +54,7 @@ jobs:
           action: update-status
           issue-node-id: ${{ github.event.issue.node_id }}
           target-status: Progress
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
 
   remove-needs-thinking-on-close:
     if: github.event.action == 'closed'
