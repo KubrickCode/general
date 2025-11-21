@@ -21,5 +21,6 @@ jobs:
       issue-node-id: ${{ github.event.issue.node_id }}
       issue-user-login: ${{ github.event.issue.user.login }}
       label-name: ${{ github.event.label.name || '' }}
+      has-bug-label: ${{ contains(github.event.issue.labels.*.name, 'bug') }}
     secrets:
       GH_PAT: ${{ secrets.GH_PAT }}
