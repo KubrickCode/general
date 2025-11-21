@@ -88,12 +88,12 @@ jobs:
           action: update-status
           issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
           target-status: ${{ github.event.pull_request.draft && 'Progress' || 'Review' }}
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
 
       - name: Add Gemini review for non-draft PR
         if: steps.linked.outputs.has_linked_issue == 'true' && !github.event.pull_request.draft
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -114,7 +114,7 @@ jobs:
 
       - name: Add Gemini review comment
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -145,7 +145,7 @@ jobs:
           action: update-status
           issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
           target-status: Review
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
 
   converted-to-draft:
     if: github.event.action == 'converted_to_draft'
@@ -181,4 +181,4 @@ jobs:
           action: update-status
           issue-node-id: ${{ steps.linked.outputs.issue_node_id }}
           target-status: Progress
-          github-token: ${{ secrets.PAT_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }}
