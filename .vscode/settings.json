@@ -55,7 +55,7 @@
       ]
     },
     {
-      "name": "Utils",
+      "name": "$(tools) Utils",
       "shortcut": "u",
       "color": "teal",
       "group": [
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "name": "Claude",
+      "name": "$(hubot) Claude",
       "color": "blue",
       "shortcut": "c",
       "command": "export IS_SANDBOX=1 && claude --dangerously-skip-permissions",
