@@ -28,12 +28,12 @@ $ARGUMENTS
 
 **Interpretation**:
 
-| Input | Action |
-| --- | --- |
-| Empty | Analyze entire codebase |
-| Path (e.g., `src/legacy/`) | Analyze specified directory |
-| `--dry-run` | Report only, no deletions |
-| `--auto` | Delete HIGH confidence items without confirmation |
+| Input                      | Action                                            |
+| -------------------------- | ------------------------------------------------- |
+| Empty                      | Analyze entire codebase                           |
+| Path (e.g., `src/legacy/`) | Analyze specified directory                       |
+| `--dry-run`                | Report only, no deletions                         |
+| `--auto`                   | Delete HIGH confidence items without confirmation |
 
 ---
 
@@ -41,15 +41,15 @@ $ARGUMENTS
 
 ### Absolute Preservation
 
-| Category | Detection Method | Examples |
-| --- | --- | --- |
-| **Public API** | `package.json` exports, `index.ts` re-exports | Library entry points |
-| **Planned Features** | TODO/FIXME with ticket/issue | `// TODO(#123): implement` |
-| **Framework Conventions** | Path-based (pages/, app/, api/) | Next.js routes, NestJS modules |
-| **Test Infrastructure** | Imported by `*.test.*`, `*.spec.*` | Fixtures, mocks, test utils |
-| **Dynamic Imports** | `import()`, `require()` patterns | Lazy loading, code splitting |
-| **Build Dependencies** | Referenced in package.json scripts | Build tools, CLI scripts |
-| **External Contracts** | GraphQL types, API schemas | Schema definitions |
+| Category                  | Detection Method                              | Examples                       |
+| ------------------------- | --------------------------------------------- | ------------------------------ |
+| **Public API**            | `package.json` exports, `index.ts` re-exports | Library entry points           |
+| **Planned Features**      | TODO/FIXME with ticket/issue                  | `// TODO(#123): implement`     |
+| **Framework Conventions** | Path-based (pages/, app/, api/)               | Next.js routes, NestJS modules |
+| **Test Infrastructure**   | Imported by `*.test.*`, `*.spec.*`            | Fixtures, mocks, test utils    |
+| **Dynamic Imports**       | `import()`, `require()` patterns              | Lazy loading, code splitting   |
+| **Build Dependencies**    | Referenced in package.json scripts            | Build tools, CLI scripts       |
+| **External Contracts**    | GraphQL types, API schemas                    | Schema definitions             |
 
 ### Special Cases
 
@@ -139,11 +139,11 @@ Files not imported anywhere:
 
 **Confidence Classification**:
 
-| Level | Criteria | Action |
-| --- | --- | --- |
-| HIGH | No references, not preserved, clear dead code | Auto-delete (with `--auto`) |
-| MEDIUM | No direct refs, but string/comment mentions | Ask confirmation |
-| LOW | Exported publicly, ambiguous usage | Report only |
+| Level  | Criteria                                      | Action                      |
+| ------ | --------------------------------------------- | --------------------------- |
+| HIGH   | No references, not preserved, clear dead code | Auto-delete (with `--auto`) |
+| MEDIUM | No direct refs, but string/comment mentions   | Ask confirmation            |
+| LOW    | Exported publicly, ambiguous usage            | Report only                 |
 
 ### Phase 4: Safe Deletion
 
@@ -191,11 +191,13 @@ git checkout -- {failed_files}
 ---
 
 ## Context ✓
+
 - Public API: 12 exports in src/index.ts
 - Framework: Next.js (preserving pages/, app/, api/)
 - Test utils: 5 shared utilities
 
 ## Detection Progress
+
 - Scanning exports... (45/120)
 - Checking deprecated markers...
 ```
@@ -212,18 +214,19 @@ git checkout -- {failed_files}
 
 ## 📊 Summary
 
-| Category | Count | Lines |
-| --- | --- | --- |
-| Unused Exports | {n} | {lines} |
-| Deprecated Code | {n} | {lines} |
-| Orphaned Files | {n} | {lines} |
-| **TOTAL** | **{n}** | **{lines}** |
+| Category        | Count   | Lines       |
+| --------------- | ------- | ----------- |
+| Unused Exports  | {n}     | {lines}     |
+| Deprecated Code | {n}     | {lines}     |
+| Orphaned Files  | {n}     | {lines}     |
+| **TOTAL**       | **{n}** | **{lines}** |
 
 ---
 
 ## 🔴 DELETED (HIGH Confidence)
 
 ### {file_path}:{line}
+
 - **Type**: {function/class/variable}
 - **Reason**: No references found
 - **Verification**: Build ✓ Tests ✓
@@ -233,6 +236,7 @@ git checkout -- {failed_files}
 ## 🟡 SKIPPED - Needs Review
 
 ### {file_path}:{line}
+
 - **Type**: {function/class/variable}
 - **Reason**: {why detected as dead}
 - **Skip Reason**: {why preserved}
@@ -243,6 +247,7 @@ git checkout -- {failed_files}
 ## 🟢 PRESERVED (Matched Rules)
 
 ### {file_path}:{line}
+
 - **Rule**: {which preservation rule}
 - **Detail**: {specifics}
 
@@ -270,10 +275,12 @@ Items requiring human decision:
 ## 📋 Next Steps
 
 ### Immediate
+
 - [ ] Review {n} SKIPPED items
 - [ ] Investigate {n} MANUAL REVIEW items
 
 ### Recommended
+
 - [ ] Add deprecation notices before removing LOW confidence items
 - [ ] Update documentation for removed APIs
 - [ ] Configure lint rules to prevent future dead code
